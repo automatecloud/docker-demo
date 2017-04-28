@@ -1,0 +1,76 @@
+version: "3.1"
+
+services:
+  app:
+    image: ${DTR_URL}/demo/docker-demo:${TAG}
+    deploy:
+      mode: replicated
+      replicas: 4
+      update_config:
+        parallelism: 2
+        delay: 5s
+        failure_action: continue
+      labels:
+        - "com.docker.ucp.mesh.http.8080=internal_port=8080,external_route=http://docker-demo-${ENVIRONMENT}.${DOMAIN_NAME}"
+        - "com.docker.ucp.access.label=${COMPOSE_PROJECT}"
+    environment:
+      - "TITLE=Docker Demo-${ENVIRONMENT}"
+      - "DB_HOST=db"
+      - "DB_PORT=5432"
+      - "DB_NAME=${DB_NAME}"
+      - "DB_SSL_MODE=disable"
+    secrets:
+      - source: DB_USER
+        target: DB_USER
+        uid: "0"
+        gid: "0"
+        mode: 0400
+      - source: DB_PASS
+        target: DB_PASS
+        uid: "0"
+        gid: "0"
+        mode: 0400
+    networks:
+      - docker-demo
+      - ucp-hrm
+    ports:
+      - "8080"
+  db:
+    image: ${DTR_URL}/official/postgres:latest
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - "node.role == manager"
+      labels:
+        - "com.docker.ucp.access.label=${COMPOSE_PROJECT}"
+    environment:
+      - "POSTGRES_USER=${DB_USER}"
+      - "POSTGRES_PASSWORD=${DB_PASS}"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - docker-demo
+
+volumes:
+  postgres-data:
+    driver: local
+    labels:
+      - "com.docker.ucp.access.label=${COMPOSE_PROJECT}"
+
+networks:
+  docker-demo:
+    driver: overlay
+    labels:
+      - "com.docker.ucp.access.label=${COMPOSE_PROJECT}"
+  ucp-hrm:
+    external: true
+
+secrets:
+  DB_USER:
+    external:
+      name: ${ENVIRONMENT}_DB_USER
+  DB_PASS:
+    external:
+      name: ${ENVIRONMENT}_DB_PASS

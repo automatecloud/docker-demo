@@ -1,0 +1,32 @@
+version: "2"
+
+services:
+  app:
+    build: .
+    command: /bin/sh -c "sleep 5 && go-wrapper run"
+    environment:
+      - "TITLE=Docker Demo"
+      - "DB_HOST=db"
+      - "DB_PORT=5432"
+      - "DB_NAME=demo"
+      - "DB_USER=demo"
+      - "DB_PASS=demo"
+      - "DB_SSL_MODE=disable"
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./static:/go/src/app/static
+      - ./templates:/go/src/app/templates
+  db:
+    image: postgres:latest
+    environment:
+      - "POSTGRES_USER=demo"
+      - "POSTGRES_PASSWORD=demo"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
+    driver: local

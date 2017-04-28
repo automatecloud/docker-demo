@@ -1,0 +1,41 @@
+version: "2"
+
+services:
+  app:
+    image: ${DTR_URL}/demo/docker-demo:${TAG}
+    command: /bin/sh -c "sleep 5 && go-wrapper run"
+    environment:
+      - "TITLE=${TITLE}"
+      - "DB_HOST=db"
+      - "DB_PORT=5432"
+      - "DB_NAME=${DB_NAME}"
+      - "DB_USER=${DB_USER}"
+      - "DB_PASS=${DB_PASS}"
+      - "DB_SSL_MODE=disable"
+    depends_on:
+      - db
+    networks:
+      - docker-demo
+    ports:
+      - "8080"
+    expose:
+      - "8080"
+  db:
+    image: postgres:latest
+    environment:
+      - "POSTGRES_USER=${DB_USER}"
+      - "POSTGRES_PASSWORD=${DB_PASS}"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - docker-demo
+    expose:
+      - "5432"
+
+networks:
+  docker-demo:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local
