@@ -21,3 +21,7 @@ div.logs {
     height: 175px;
     overflow-y: scroll;
 }
+@media only screen and (max-width: 600px) {
+body {overflow-x:auto}
+}
+
