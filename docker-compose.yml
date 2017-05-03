@@ -14,20 +14,20 @@ services:
       - "DB_PASS=${DB_PASS}"
       - "DB_NAME=${DB_NAME}"
       - "DB_SSL_MODE=disable"
-      #- "INTERLOCK_DATA={\"hostname\":\"docker-${ENVIRONMENT}\",\"domain\":\"${DOMAIN_NAME}\"}"
+      - "INTERLOCK_DATA={\"hostname\":\"docker-${ENVIRONMENT}\",\"domain\":\"${DOMAIN_NAME}\"}"
     networks:
       - docker-demo
     ports:
       - "8080"
-    expose:
-      - "8080"
+   # expose:
+   #  - "8080"
     labels:
       - "com.docker.ucp.access.label=${COMPOSE_PROJECT}"
       - "interlock.hostname=docker-${ENVIRONMENT}"
       - "interlock.domain=${DOMAIN_NAME}"
   db:
     image: postgres:latest
-    restart: always
+    #restart: always
     environment:
       - "POSTGRES_USER=${DB_USER}"
       - "POSTGRES_PASSWORD=${DB_PASS}"
