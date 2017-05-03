@@ -2,32 +2,75 @@ version: "3.1"
 
 services:
   app:
-    build: .
-    image: docker_demo
-    command: /bin/sh -c "sleep 5 && go-wrapper run"
+    image: ${DTR_URL}/demo/docker-demo:${TAG}
+    deploy:
+      mode: replicated
+      replicas: 2
+      update_config:
+        parallelism: 2
+        delay: 5s
+        failure_action: continue
+      labels:
+        - "com.docker.ucp.mesh.http.8088=internal_port=8088,external_route=http://docker-demo-${ENVIRONMENT}.${DOMAIN_NAME}"
+        - "com.docker.ucp.access.label=${COMPOSE_PROJECT}"
     environment:
-      - "TITLE=Docker Demo"
+      - "TITLE=Docker Demo-${ENVIRONMENT}"
       - "DB_HOST=db"
       - "DB_PORT=5432"
-      - "DB_NAME=demo"
-      - "DB_USER=demo"
-      - "DB_PASS=demo"
+      - "DB_NAME=${DB_NAME}"
       - "DB_SSL_MODE=disable"
-    depends_on:
-      - db
+    secrets:
+      - source: DB_USER
+        target: DB_USER
+        uid: "0"
+        gid: "0"
+        mode: 0400
+      - source: DB_PASS
+        target: DB_PASS
+        uid: "0"
+        gid: "0"
+        mode: 0400
+    networks:
+      - docker-demo
+      - ucp-hrm
     ports:
-      - "8088:8080"
-    volumes:
-      - ./static:/go/src/app/static
-      - ./templates:/go/src/app/templates
+      - "8088"
   db:
-    image: postgres:latest
+    image: ${DTR_URL}/official/postgres:latest
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - "node.role == manager"
+      labels:
+        - "com.docker.ucp.access.label=${COMPOSE_PROJECT}"
     environment:
-      - "POSTGRES_USER=demo"
-      - "POSTGRES_PASSWORD=demo"
+      - "POSTGRES_USER=${DB_USER}"
+      - "POSTGRES_PASSWORD=${DB_PASS}"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    networks:
+      - docker-demo
 
 volumes:
   postgres-data:
     driver: local
+    labels:
+      - "com.docker.ucp.access.label=${COMPOSE_PROJECT}"
+
+networks:
+  docker-demo:
+    driver: overlay
+    labels:
+      - "com.docker.ucp.access.label=${COMPOSE_PROJECT}"
+  ucp-hrm:
+    external: true
+
+secrets:
+  DB_USER:
+    external:
+      name: ${ENVIRONMENT}_DB_USER
+  DB_PASS:
+    external:
+      name: ${ENVIRONMENT}_DB_PASS

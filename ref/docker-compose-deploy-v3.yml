@@ -5,13 +5,13 @@ services:
     image: ${DTR_URL}/demo/docker-demo:${TAG}
     deploy:
       mode: replicated
-      replicas: 4
+      replicas: 2
       update_config:
         parallelism: 2
         delay: 5s
         failure_action: continue
       labels:
-        - "com.docker.ucp.mesh.http.8080=internal_port=8080,external_route=http://docker-demo-${ENVIRONMENT}.${DOMAIN_NAME}"
+        - "com.docker.ucp.mesh.http.8088=internal_port=8088,external_route=http://docker-demo-${ENVIRONMENT}.${DOMAIN_NAME}"
         - "com.docker.ucp.access.label=${COMPOSE_PROJECT}"
     environment:
       - "TITLE=Docker Demo-${ENVIRONMENT}"
@@ -34,7 +34,7 @@ services:
       - docker-demo
       - ucp-hrm
     ports:
-      - "8080"
+      - "8088"
   db:
     image: ${DTR_URL}/official/postgres:latest
     deploy:
