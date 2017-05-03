@@ -3,31 +3,27 @@ version: "3"
 services:
   app:
     image: ${DTR_IPADDR}/admin/demo:latest
-    restart: always
     command: /bin/sh -c "sleep 5 && go-wrapper run"
     environment:
-      - "constraint:provider==manager"
+      #- "constraint:provider==${PROVIDER}"
       - "TITLE=Docker Demo"
       - "DB_HOST=demo_db"
       - "DB_PORT=5432"
-      - "DB_USER=${DB_USER}"
-      - "DB_PASS=${DB_PASS}"
-      - "DB_NAME=${DB_NAME}"
+      - "DB_USER=admin"
+      - "DB_PASS=password"
+      - "DB_NAME=db"
       - "DB_SSL_MODE=disable"
-      - "INTERLOCK_DATA={\"hostname\":\"docker-${ENVIRONMENT}\",\"domain\":\"${DOMAIN_NAME}\"}"
+      #- "INTERLOCK_DATA={\"hostname\":\"docker-${ENVIRONMENT}\",\"domain\":\"${DOMAIN_NAME}\"}"
     networks:
       - docker-demo
     ports:
       - "8080"
-   # expose:
-   #  - "8080"
     labels:
       - "com.docker.ucp.access.label=${COMPOSE_PROJECT}"
-      - "interlock.hostname=docker-${ENVIRONMENT}"
-      - "interlock.domain=${DOMAIN_NAME}"
+      - "interlock.hostname=docker-demo"
+      #- "interlock.domain=${DOMAIN_NAME}"
   db:
     image: postgres:latest
-    #restart: always
     environment:
       - "POSTGRES_USER=${DB_USER}"
       - "POSTGRES_PASSWORD=${DB_PASS}"
