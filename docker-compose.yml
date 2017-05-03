@@ -8,7 +8,7 @@ services:
     environment:
       - "constraint:provider==manager"
       - "TITLE=Docker Demo"
-      - "DB_HOST=db"
+      - "DB_HOST=demo_db"
       - "DB_PORT=5432"
       - "DB_USER=${DB_USER}"
       - "DB_PASS=${DB_PASS}"
